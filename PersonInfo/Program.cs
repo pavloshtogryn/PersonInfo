@@ -17,6 +17,10 @@ namespace PersonInfo
             new UserRepository(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddMvc(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            });
 
             builder.Logging.AddLog4Net(new Log4NetProviderOptions
             {
