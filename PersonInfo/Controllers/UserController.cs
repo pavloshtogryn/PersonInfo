@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using PersonInfo.Models;
-using System;
 
 namespace PersonInfo.Controllers
 {
@@ -79,7 +77,7 @@ namespace PersonInfo.Controllers
         }
 
         [HttpPost ("add")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<int>> AddUserAsync([FromBody] User newUser)
@@ -101,7 +99,7 @@ namespace PersonInfo.Controllers
         }
 
         [HttpPost("edit")]
-        [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateUserAsync([FromBody] User newUser)

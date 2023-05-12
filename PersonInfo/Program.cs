@@ -17,6 +17,10 @@ namespace PersonInfo
             new UserRepository("Server=192.168.137.155;Database=testdb;User ID=pavlo;PASSWORD=12345678Aa; TrustServerCertificate=True;"));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddMvc(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            });
 
             builder.Logging.AddLog4Net(new Log4NetProviderOptions
             {
