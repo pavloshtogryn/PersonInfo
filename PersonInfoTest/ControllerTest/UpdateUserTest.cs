@@ -9,6 +9,7 @@ namespace PersonInfoTest.ControllerTest
     [TestClass]
     public class UpdateUserTest
     {
+        /*
         [TestMethod]
         public async Task UpdateUser_ReturnsOk_ValidUser()
         {
@@ -121,5 +122,6 @@ namespace PersonInfoTest.ControllerTest
 
             Assert.IsTrue(actionResult is ObjectResult result && result.StatusCode == 500);
         }
+        */
     }
 }

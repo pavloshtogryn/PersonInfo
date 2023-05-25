@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PersonInfo.Models;
 
 namespace PersonInfo.Controllers
@@ -9,11 +10,11 @@ namespace PersonInfo.Controllers
     {
 
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        IUserRepository _userRepository;
+        private readonly PersonInfoDbContext _context;
 
-        public UserController(IUserRepository userRepository)
+        public UserController(PersonInfoDbContext context)
         {
-            _userRepository = userRepository;
+            _context = context;
         }
 
         [HttpGet("all", Name = "GetAllUsers")]
@@ -26,7 +27,7 @@ namespace PersonInfo.Controllers
 
             try
             {
-                users = await _userRepository.GetAllUsersAsync();
+                users = await _context.Users.ToListAsync();
             }
             catch (Exception ex)
             {
@@ -43,7 +44,7 @@ namespace PersonInfo.Controllers
                 return Ok(users);
             }
         }
-
+        
         [HttpGet(Name = "GetUserById")]
         [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -58,7 +59,7 @@ namespace PersonInfo.Controllers
             User user;
             try
             {
-                user = await _userRepository.GetAsync(userId);
+                user = await _context.Users.FindAsync(userId);
             }
             catch (Exception ex)
             {
@@ -88,8 +89,17 @@ namespace PersonInfo.Controllers
             }
             try
             {
-                int createdUserId = await _userRepository.CreateAsync(newUser);
-                return CreatedAtAction(nameof(AddUserAsync), new { id = createdUserId });
+                await _context.Users.AddAsync(newUser);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return CreatedAtAction(nameof(AddUserAsync), new { id = newUser.Id });
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
             catch(Exception ex) 
             {
@@ -97,29 +107,49 @@ namespace PersonInfo.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding user");
             }
         }
-
+        
         [HttpPost("edit")]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> UpdateUserAsync([FromBody] User newUser)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> UpdateUserAsync([FromBody] User user)
         {
-            if (newUser == null || !UserValid(newUser))
+            if (user == null || !UserValid(user))
             {
                 return BadRequest("Given user is null");
             }
             try
             {
-                await _userRepository.UpdateAsync(newUser);
+                var userToEdit = _context.Users.Where(u => u.Id == user.Id).FirstOrDefault();
+                if (userToEdit == null) 
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    userToEdit.FirstName = user.FirstName;
+                    userToEdit.LastName = user.LastName;
+                    userToEdit.DateOfBirth = user.DateOfBirth;
+                }
+
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
+
             }
             catch (Exception ex)
             {
                 log.Error("Error occurred while e a new user.", ex);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding user");
             }
-
-            return Ok();
-            
         }
 
         private bool UserValid(User user)
