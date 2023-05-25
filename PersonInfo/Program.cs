@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Configuration;
-using PersonInfo.Models;
+
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 namespace PersonInfo
 {
@@ -13,14 +14,15 @@ namespace PersonInfo
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddSingleton<IUserRepository, UserRepository>(serviceProvider =>
-            new UserRepository("Server=192.168.137.155;Database=testdb;User ID=pavlo;PASSWORD=12345678Aa; TrustServerCertificate=True;"));
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddMvc(options =>
             {
                 options.SuppressAsyncSuffixInActionNames = false;
             });
+            ;
+            builder.Services.AddDbContext<PersonInfoDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Logging.AddLog4Net(new Log4NetProviderOptions
             {

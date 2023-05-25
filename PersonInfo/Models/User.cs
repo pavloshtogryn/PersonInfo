@@ -15,7 +15,7 @@ namespace PersonInfo.Models
             {
                 int age = DateTime.Now.Year - DateOfBirth.Year;
 
-                if (DateTime.Now.DayOfYear > DateOfBirth.DayOfYear)
+                if (DateTime.Now.DayOfYear >= DateOfBirth.DayOfYear)
                 {
                     return age;
                 }
