@@ -15,13 +15,12 @@ namespace PersonInfo
         {
 
         }
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().Property(p => p.Id).ValueGeneratedOnAdd()
     .Metadata.SetBeforeSaveBehavior(PropertySaveBehavior.Ignore);
         }
-
         public virtual DbSet<User> Users { get; set; }
     }
 }

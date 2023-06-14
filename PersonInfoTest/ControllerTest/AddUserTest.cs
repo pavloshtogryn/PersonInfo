@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using PersonInfo;
 using PersonInfo.Controllers;
 using PersonInfo.Models;
 
@@ -9,134 +12,94 @@ namespace PersonInfoTest.ControllerTest
     [TestClass]
     public class AddUserTest
     {
-        /*
-        [TestMethod]
-        public async Task CreateUser_ReturnsId_ValidUser()
+        private Mock<PersonInfoDbContext> _mockContext;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            User validUserToCreate = new User() { FirstName = "Sophia", LastName = "Smith", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
-            int createdUserId = 2;
-
-            var mockRepository = new Mock<IUserRepository>();
-
-            mockRepository.Setup(repo => repo.CreateAsync(validUserToCreate)).ReturnsAsync(createdUserId);
-
-            var controller = new UserController(mockRepository.Object);
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(validUserToCreate);
-
-            int id = 0;
-
-            if (actionResult.Result is CreatedAtActionResult result && result.Value != null)
-            {
-                var type = result.Value.GetType();
-                var prop = type.GetProperty("id");
-                if (prop != null)
-                {
-                    id = (int)prop.GetValue(result.Value, null);
-                }
-            }
-
-            Assert.AreEqual(createdUserId, id);
+            _mockContext = new Mock<PersonInfoDbContext>();
         }
 
         [TestMethod]
         public async Task CreateUser_ReturnsBadRequest_UserNull()
         {
-            var mockRepository = new Mock<IUserRepository>();
+            var controller = new UserController(_mockContext.Object);
 
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).ReturnsAsync(It.IsAny<int>());
+            var result = await controller.AddUserAsync(null);
 
-            var controller = new UserController(mockRepository.Object);
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(null);
-
-            Assert.IsTrue(actionResult.Result is BadRequestObjectResult);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
         [TestMethod]
         public async Task CreateUser_ReturnsBadRequest_UserEnptyName()
         {
+            var controller = new UserController(_mockContext.Object);
+
             User user = new User() { FirstName = "", LastName = "Smith", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
 
-            var mockRepository = new Mock<IUserRepository>();
+            var result = await controller.AddUserAsync(user);
 
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).ReturnsAsync(It.IsAny<int>());
-
-            var controller = new UserController(mockRepository.Object);
-
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(user);
-
-            Assert.IsTrue(actionResult.Result is BadRequestObjectResult);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
         [TestMethod]
         public async Task CreateUser_ReturnsBadRequest_UserEnptyLastName()
         {
-            User user = new User() { FirstName = "ergedg", LastName = "", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
+            var controller = new UserController(_mockContext.Object);
 
-            var mockRepository = new Mock<IUserRepository>();
+            User user = new User() { FirstName = "gdhjgh", LastName = "", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
 
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).ReturnsAsync(It.IsAny<int>());
+            var result = await controller.AddUserAsync(user);
 
-            var controller = new UserController(mockRepository.Object);
-
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(user);
-
-            Assert.IsTrue(actionResult.Result is BadRequestObjectResult);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
         [TestMethod]
         public async Task CreateUser_ReturnsBadRequest_UserNullName()
         {
-            User user = new User() { LastName = "dfgdfg", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
+            var controller = new UserController(_mockContext.Object);
 
-            var mockRepository = new Mock<IUserRepository>();
+            User user = new User() { LastName = "dfghgh", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
 
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).ReturnsAsync(It.IsAny<int>());
+            var result = await controller.AddUserAsync(user);
 
-            var controller = new UserController(mockRepository.Object);
-
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(user);
-
-            Assert.IsTrue(actionResult.Result is BadRequestObjectResult);
-        }
-
-        [TestMethod]
-        public async Task CreateUser_Returns500Error_DbException()
-        {
-            User user = new User() { FirstName = "ergedg", LastName = "dfgdfgf", DateOfBirth = new DateTime(0001, 02, 12), Id = 1 };
-
-            var mockRepository = new Mock<IUserRepository>();
-
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).Throws(new Exception("Test exception"));
-
-            var controller = new UserController(mockRepository.Object);
-
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(user);
-
-            Assert.IsTrue(actionResult.Result is ObjectResult result && result.StatusCode == 500);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
 
         [TestMethod]
         public async Task CreateUser_ReturnsBadRequest_UserInvalidDateOfBirth()
         {
+            var controller = new UserController(_mockContext.Object);
+
             User user = new User() { FirstName = "ergedg", LastName = "sdfsdf", DateOfBirth = new DateTime(0001, 01, 01), Id = 1 };
 
-            var mockRepository = new Mock<IUserRepository>();
+            var result = await controller.AddUserAsync(user);
 
-            mockRepository.Setup(repo => repo.CreateAsync(It.IsAny<User>())).ReturnsAsync(It.IsAny<int>());
-
-            var controller = new UserController(mockRepository.Object);
-
-
-            ActionResult<int> actionResult = await controller.AddUserAsync(user);
-
-            Assert.IsTrue(actionResult.Result is BadRequestObjectResult);
+            Assert.IsInstanceOfType(result.Result, typeof(BadRequestObjectResult));
         }
-        */
+
+        [TestMethod]
+        public async Task CreateUser_ReturnsId_ValidUser()
+        {
+            var options = new DbContextOptionsBuilder<PersonInfoDbContext>().UseInMemoryDatabase(databaseName: "TestDatabase").Options;
+
+            // Insert seed data into the database using one instance of the context
+            using (var context = new PersonInfoDbContext(options))
+            {
+                context.Database.EnsureDeleted();
+                context.SaveChanges();
+            }
+
+            // Use another instance of the context to test our method.
+            using (var context = new PersonInfoDbContext(options))
+            {
+                var controller = new UserController(context);
+                User validUserToCreate = new User() { FirstName = "Sophia", LastName = "Smith", DateOfBirth = new DateTime(1990, 02, 12), Id = 1 };
+
+                var result = await controller.AddUserAsync(validUserToCreate);
+
+                Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
+            }
+        }
     }
 }
