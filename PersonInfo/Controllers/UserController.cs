@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using PersonInfo.Models;
 
 namespace PersonInfo.Controllers
@@ -8,13 +9,15 @@ namespace PersonInfo.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private const string userListCacheKey = "userList";
+        private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private readonly PersonInfoDbContext _context;
+        private IMemoryCache _cache;
 
-        public UserController(PersonInfoDbContext context)
+        public UserController(PersonInfoDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         [HttpGet("all", Name = "GetAllUsers")]
@@ -23,16 +26,28 @@ namespace PersonInfo.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<User>>> GetAllUsersAsync()
         {
-            List<User> users = null;
+            List<User> users = new List<User>() { };
+  
+            if (_cache.TryGetValue(userListCacheKey, out users))
+            {
+                return Ok(users);
+            }
 
             try
             {
                 users = await _context.Users.ToListAsync();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(60))
+                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(3600))
+                    .SetPriority(CacheItemPriority.Normal)
+                    .SetSize(1024);
+                _cache.Set(userListCacheKey, users, cacheEntryOptions);
             }
             catch (Exception ex)
             {
-                log.Error("Error occurred while getting users list ", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding users");
+                _log.Error("Error occurred while getting users list ", ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error when getting users");
             }
             
             if(users == null || users.Count == 0)
@@ -59,11 +74,11 @@ namespace PersonInfo.Controllers
             User user;
             try
             {
-                user = await _context.Users.FindAsync(userId);
+                user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             }
             catch (Exception ex)
             {
-                log.Error("Error occurred while getting user with id: " + userId, ex);
+                _log.Error("Error occurred while getting user with id: " + userId, ex);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error when getting user");
             }
 
@@ -103,7 +118,7 @@ namespace PersonInfo.Controllers
             }
             catch(Exception ex) 
             {
-                log.Error("Error occurred while adding a new user.", ex);
+                _log.Error("Error occurred while adding a new user.", ex);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding user");
             }
         }
@@ -137,6 +152,7 @@ namespace PersonInfo.Controllers
 
                 if (result > 0)
                 {
+                    _cache.Remove(userListCacheKey);
                     return Ok();
                 }
                 else
@@ -147,8 +163,8 @@ namespace PersonInfo.Controllers
             }
             catch (Exception ex)
             {
-                log.Error("Error occurred while e a new user.", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding user");
+                _log.Error("Error occurred while editing a new user.", ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error when updating user");
             }
         }
 

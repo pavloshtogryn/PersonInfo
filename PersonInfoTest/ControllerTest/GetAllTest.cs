@@ -1,16 +1,9 @@
 ﻿using PersonInfo;
 using PersonInfo.Controllers;
 using PersonInfo.Models;
-using Moq.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Data.Entity.Infrastructure;
-using PersonInfo;
 
 namespace PersonInfoTest.ControllerTest
 {

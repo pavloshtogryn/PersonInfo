@@ -29,6 +29,8 @@ namespace PersonInfo
                 Log4NetConfigFileName = "log4net.config"
             });
 
+
+            builder.Services.AddMemoryCache();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
