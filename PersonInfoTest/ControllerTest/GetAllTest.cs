@@ -4,10 +4,10 @@ using PersonInfo.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace PersonInfoTest.ControllerTest
 {
-
     [TestClass]
     public class GetAllTest
     {
@@ -26,7 +26,8 @@ namespace PersonInfoTest.ControllerTest
             var mockContext = new Mock<PersonInfoDbContext>();
             mockContext.Setup(c => c.Users).Returns(mockSet.Object);
 
-            var controller = new UserController(mockContext.Object);
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var controller = new UserController(mockContext.Object, memoryCache);
             ActionResult<IEnumerable<User>> actionResult = await controller.GetAllUsersAsync();
 
             List<User> users = null;
@@ -52,7 +53,8 @@ namespace PersonInfoTest.ControllerTest
             var mockContext = new Mock<PersonInfoDbContext>();
             mockContext.Setup(c => c.Users).Returns(mockSet.Object);
 
-            var controller = new UserController(mockContext.Object);
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var controller = new UserController(mockContext.Object, memoryCache);
             ActionResult<IEnumerable<User>> actionResult = await controller.GetAllUsersAsync();
 
             Assert.IsTrue(actionResult.Result is NotFoundResult);
@@ -65,7 +67,8 @@ namespace PersonInfoTest.ControllerTest
             var mockContext = new Mock<PersonInfoDbContext>();
             mockContext.Setup(c => c.Users).Throws(new Exception("Test exception"));
 
-            var controller = new UserController(mockContext.Object);
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var controller = new UserController(mockContext.Object, memoryCache);
             ActionResult<IEnumerable<User>> actionResult = await controller.GetAllUsersAsync();
 
             Assert.IsTrue(actionResult.Result is ObjectResult result && result.StatusCode == 500);

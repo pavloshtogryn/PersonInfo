@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using PersonInfo;
@@ -28,7 +29,8 @@ namespace PersonInfoTest.ControllerTest
             // Use another instance of the context to test our method.
             using (var context = new PersonInfoDbContext(options))
             {
-                var controller = new UserController(context);
+                var memoryCache = new MemoryCache(new MemoryCacheOptions());
+                var controller = new UserController(context, memoryCache);
                 var result = await controller.GetUserByIdAsync(1);
 
                 User user = null;
@@ -62,7 +64,8 @@ namespace PersonInfoTest.ControllerTest
             // Use another instance of the context to test our method.
             using (var context = new PersonInfoDbContext(options))
             {
-                var controller = new UserController(context);
+                var memoryCache = new MemoryCache(new MemoryCacheOptions());
+                var controller = new UserController(context, memoryCache);
                 var result = await controller.GetUserByIdAsync(3);
 
                 Assert.IsTrue(result.Result is NotFoundResult);
@@ -84,7 +87,8 @@ namespace PersonInfoTest.ControllerTest
             // Use another instance of the context to test our method.
             using (var context = new PersonInfoDbContext(options))
             {
-                var controller = new UserController(context);
+                var memoryCache = new MemoryCache(new MemoryCacheOptions());
+                var controller = new UserController(context, memoryCache);
                 var result = await controller.GetUserByIdAsync(1);
 
                 Assert.IsTrue(result.Result is NotFoundResult);
@@ -108,7 +112,8 @@ namespace PersonInfoTest.ControllerTest
             // Use another instance of the context to test our method.
             using (var context = new PersonInfoDbContext(options))
             {
-                var controller = new UserController(context);
+                var memoryCache = new MemoryCache(new MemoryCacheOptions());
+                var controller = new UserController(context, memoryCache);
                 var result = await controller.GetUserByIdAsync(-1);
 
                 Assert.IsTrue(result.Result is ObjectResult res && res.StatusCode == 400);
