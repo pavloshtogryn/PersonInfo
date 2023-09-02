@@ -92,7 +92,7 @@ namespace PersonInfo.Controllers
             }
         }
 
-        [HttpPost ("add")]
+        [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -123,7 +123,7 @@ namespace PersonInfo.Controllers
             }
         }
         
-        [HttpPost("edit")]
+        [HttpPut]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

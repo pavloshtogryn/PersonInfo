@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using PersonInfo.Models;
-using System.Configuration;
 
 namespace PersonInfo
 {
