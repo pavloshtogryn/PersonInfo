@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using System.Xml.Linq;
-
+﻿
 namespace PersonInfo.Models
 {
     public class User

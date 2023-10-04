@@ -66,7 +66,7 @@ namespace PersonInfo.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error when getting user");
             }
 
-            if(user == null || !UserValid(user))
+            if(!UserValid(user))
             {
                 return NotFound();
             }
@@ -76,15 +76,15 @@ namespace PersonInfo.Controllers
             }
         }
 
-        [HttpPost ("add")]
+        [HttpPost]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<int>> AddUserAsync([FromBody] User newUser)
         {
-            if(newUser == null || !UserValid(newUser))
+            if(!UserValid(newUser))
             {
-                return BadRequest("Given user is null");
+                return BadRequest("Given user is null or not valid");
             }
             try
             {
@@ -98,15 +98,15 @@ namespace PersonInfo.Controllers
             }
         }
 
-        [HttpPost("edit")]
+        [HttpPut]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UpdateUserAsync([FromBody] User newUser)
         {
-            if (newUser == null || !UserValid(newUser))
+            if (!UserValid(newUser))
             {
-                return BadRequest("Given user is null");
+                return BadRequest("Given user is null or not valid");
             }
             try
             {
@@ -114,17 +114,56 @@ namespace PersonInfo.Controllers
             }
             catch (Exception ex)
             {
-                log.Error("Error occurred while e a new user.", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error when adding user");
+                log.Error("Error occurred while updating a user.", ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error when updating user");
             }
 
             return Ok();
             
         }
 
+        [HttpDelete]
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> DeleteUserAsync(int userId)
+        {
+            if (userId < 0)
+            {
+                return BadRequest("Given user is null or not valid");
+            }
+            try
+            {
+                await _userRepository.DeleteAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error occurred while deleting a user.", ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error when deleting a user");
+            }
+
+            return Ok();
+
+        }
+
         private bool UserValid(User user)
         {
-            return !String.IsNullOrEmpty(user.FirstName) && !String.IsNullOrEmpty(user.LastName) && user.DateOfBirth != DateTime.MinValue;
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(user.FirstName) || string.IsNullOrEmpty(user.LastName))
+            {
+                return false;
+            }
+
+            if (user.DateOfBirth == DateTime.MinValue || user.DateOfBirth > DateTime.Today)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

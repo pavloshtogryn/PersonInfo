@@ -10,6 +10,7 @@ namespace PersonInfo.Models
         Task<User> GetAsync(int id);
         Task<List<User>> GetAllUsersAsync();
         Task UpdateAsync(User user);
+        Task DeleteAsync(int userId);
     }
     public class UserRepository : IUserRepository
     {
@@ -56,6 +57,16 @@ namespace PersonInfo.Models
                 var query = "UPDATE Users SET FirstName = @FirstName, LastName = @LastName, DateOfBirth = @DateOfBirth WHERE Id = @id";
                 
                 await db.ExecuteAsync(query, user);
+            }
+        }
+
+        public async Task DeleteAsync(int userId)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                var query = "DELETE Users WHERE Id = @Id";
+
+                await db.ExecuteAsync(query, new { Id = userId });
             }
         }
     }
